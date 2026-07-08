@@ -1,0 +1,11 @@
+{
+	"name": "com.eruru.assetcleaner",
+	"displayName": "Eruru Asset Cleaner",
+	"version": "0.0.1",
+	"unity": "2022.3",
+	"description": "Unity Menu Tools/Eruru/Asset Cleaner",
+	"vrchatVersion": "2022.1.1",
+	"author": {
+		"name": "Eruru"
+	}
+}

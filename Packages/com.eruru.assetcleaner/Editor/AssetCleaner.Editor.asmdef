@@ -1,5 +1,5 @@
 {
-    "name": "VRChatPackageTemplate.Editor",
+    "name": "Eruru.AssetCleaner.Editor",
     "references": [],
     "includePlatforms": [
         "Editor"

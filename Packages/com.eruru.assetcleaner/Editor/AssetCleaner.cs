@@ -17,10 +17,10 @@ namespace Eruru.AssetCleaner {
 		const string Name = "Asset Cleaner";
 		static readonly GUIContent NameGUIContent = new (Name);
 		static readonly GUIContent AnalysisGUIContent = new ("Analysis");
-		static readonly GUIContent CollectingFilesGUIContent = new ("Stage {0}/{1} Collecting files");
-		static readonly GUIContent CheckSceneDependenciesGUIContent = new ("Stage {0}/{1} Checking scene {2}/{3} dependencies");
-		static readonly GUIContent CheckScriptDependenciesGUIContent = new ("Stage {0}/{1} Checking script dependencies");
-		static readonly GUIContent SummaryFilesGUIContent = new ("Stage {0}/{1} Summary files");
+		static readonly GUIContent CollectingFilesGUIContent = new ("Stage {0}/{1} Collecting files {2}/{3}");
+		static readonly GUIContent CheckSceneDependenciesGUIContent = new ("Stage {0}/{1} Checking scene {2}/{3} dependencies {4}/{5}");
+		static readonly GUIContent CheckScriptDependenciesGUIContent = new ("Stage {0}/{1} Checking script dependencies {2}/{3}");
+		static readonly GUIContent SummaryFilesGUIContent = new ("Stage {0}/{1} Summary files {2}/{3}");
 		static readonly GUIContent IsolationUnusedFilesGUIContent = new ("Isolation unused files");
 		static readonly GUIContent MovingFilesGUIContent = new ("Moving files");
 		static readonly GUIContent RestoreFilesGUIContent = new ("Restore files");
@@ -87,10 +87,10 @@ namespace Eruru.AssetCleaner {
 					case "ZH":
 						NameGUIContent.text = "资产清理器";
 						AnalysisGUIContent.text = "分析";
-						CollectingFilesGUIContent.text = "阶段 {0}/{1} 收集文件中";
-						CheckSceneDependenciesGUIContent.text = "阶段 {0}/{1} 检查场景 {2}/{3} 依赖中";
-						CheckScriptDependenciesGUIContent.text = "阶段{0}/{1} 检查脚本依赖中";
-						SummaryFilesGUIContent.text = "阶段 {0}/{1} 总结文件中";
+						CollectingFilesGUIContent.text = "阶段 {0}/{1} 收集文件中 {2}/{3}";
+						CheckSceneDependenciesGUIContent.text = "阶段 {0}/{1} 检查场景 {2}/{3} 依赖中 {4}/{5}";
+						CheckScriptDependenciesGUIContent.text = "阶段{0}/{1} 检查脚本依赖中 {2}/{3}";
+						SummaryFilesGUIContent.text = "阶段 {0}/{1} 总结文件中 {2}/{3}";
 						IsolationUnusedFilesGUIContent.text = "隔离未使用文件";
 						MovingFilesGUIContent.text = "移动文件中";
 						RestoreFilesGUIContent.text = "恢复文件";
@@ -170,7 +170,7 @@ namespace Eruru.AssetCleaner {
 			}
 			try {
 				Clear ();
-				var stage = 0;
+				var stage = 1;
 				var totalStage = 4;
 				var current = 0;
 				var fileGuids = AssetDatabase.FindAssets ("", new string[] { "Assets" });
@@ -180,7 +180,7 @@ namespace Eruru.AssetCleaner {
 						current++;
 						if (current <= 1 || current % 100 == 0) {
 							EditorUtility.DisplayProgressBar (NameGUIContent.text, string.Format (
-								CollectingFilesGUIContent.text, stage, totalStage
+								CollectingFilesGUIContent.text, stage, totalStage, current, FileGuidPaths.Count
 							), ToProgress (current, FileGuidPaths.Count));
 						}
 						if (AssetDatabase.IsValidFolder (x.Path)) {
@@ -201,15 +201,18 @@ namespace Eruru.AssetCleaner {
 				stage++;
 				current = 0;
 				var currentScene = 0;
+				var total = 0;
 				foreach (var sceneGuidPath in SceneGuidPaths) {
+					currentScene++;
 					var dependencyPaths = AssetDatabase.GetDependencies (sceneGuidPath.Value, true);
+					total += dependencyPaths.Length;
 					foreach (var dependencyPath in dependencyPaths) {
 						current++;
-						currentScene++;
 						if (current <= 1 || current % 100 == 0) {
 							EditorUtility.DisplayProgressBar (NameGUIContent.text, string.Format (
-								CheckSceneDependenciesGUIContent.text, stage, totalStage, currentScene, SceneGuidPaths.Count
-							), ToProgress (current, dependencyPaths.Length));
+								CheckSceneDependenciesGUIContent.text,
+								stage, totalStage, currentScene, SceneGuidPaths.Count, current, total
+							), ToProgress (current, total));
 						}
 						var dependencyGuid = AssetDatabase.AssetPathToGUID (dependencyPath);
 						FileGuidPaths.Remove (dependencyGuid);
@@ -222,7 +225,7 @@ namespace Eruru.AssetCleaner {
 					current++;
 					if (current <= 1 || current % 100 == 0) {
 						EditorUtility.DisplayProgressBar (NameGUIContent.text, string.Format (
-							CheckScriptDependenciesGUIContent.text, stage, totalStage
+							CheckScriptDependenciesGUIContent.text, stage, totalStage, current, scriptGuids.Length
 						), ToProgress (current, scriptGuids.Length));
 					}
 					if (!ScriptGuidPaths.TryGetValue (scriptGuid, out var scriptPath)) {
@@ -259,7 +262,7 @@ namespace Eruru.AssetCleaner {
 					current++;
 					if (current <= 1 || current % 100 == 0) {
 						EditorUtility.DisplayProgressBar (NameGUIContent.text, string.Format (
-							SummaryFilesGUIContent.text, stage, totalStage
+							SummaryFilesGUIContent.text, stage, totalStage, current, FileGuidPaths.Count
 						), ToProgress (current, FileGuidPaths.Count));
 					}
 				}
